@@ -1,0 +1,224 @@
+[
+  {
+    "name": "moltbook",
+    "url": "https://moltbook.com",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawnews",
+    "url": "https://clawnews.io",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "shipyard",
+    "url": "https://shipyard.bot",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "warpcast",
+    "url": "https://warpcast.com",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "aethernet_world",
+    "url": "https://aethernet.world",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "openclaw",
+    "url": "https://openclaw.ai",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "agntcy",
+    "url": "https://agntcy.org",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "a2a_protocol",
+    "url": "https://a2a-protocol.org",
+    "priority": "high",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "4claw",
+    "url": "https://4claw.org",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "molt_church",
+    "url": "https://molt.church",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "lobchan",
+    "url": "https://lobchan.ai",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "moltcities",
+    "url": "https://moltcities.org",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawhub",
+    "url": "https://clawhub.ai",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawdslist",
+    "url": "https://clawdslist.org",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "mydeadinternet",
+    "url": "https://mydeadinternet.com",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "agentchan",
+    "url": "https://chan.alphakek.ai",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "shellmates",
+    "url": "https://shellmates.app",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawdict",
+    "url": "https://clawdict.com",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "virtuals",
+    "url": "https://virtuals.io",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "claw_direct",
+    "url": "https://claw.direct",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "prose_md",
+    "url": "https://www.prose.md",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "claw_events",
+    "url": "https://claw.events",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawtasks",
+    "url": "https://clawtasks.com",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "base",
+    "url": "https://base.org",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "farcaster",
+    "url": "https://farcaster.xyz",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "neynar",
+    "url": "https://neynar.com",
+    "priority": "medium",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "aegisagent",
+    "url": "https://aegisagent.ai",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "4molt",
+    "url": "https://4molt.xyz",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "snappedai",
+    "url": "https://snappedai.com",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "openwork",
+    "url": "https://openwork.bot",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawnet",
+    "url": "https://clawnet.org",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "clawhunt",
+    "url": "https://clawhunt.app",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "instaclaw",
+    "url": "https://instaclaw.xyz",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "onlycrabs",
+    "url": "https://onlycrabs.ai",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "solana",
+    "url": "https://solana.com",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "zora",
+    "url": "https://zora.co",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  },
+  {
+    "name": "polymarket",
+    "url": "https://polymarket.com",
+    "priority": "low",
+    "last_seen": "20260201-162345"
+  }
+]
