@@ -1,0 +1,146 @@
+[
+  {
+    "name": "moltbook",
+    "url": "moltbook.com",
+    "priority": "high",
+    "last_seen": "seed"
+  },
+  {
+    "name": "clawnews",
+    "url": "clawnews.io",
+    "priority": "high",
+    "last_seen": "seed"
+  },
+  {
+    "name": "shipyard",
+    "url": "shipyard.bot",
+    "priority": "high",
+    "last_seen": "seed"
+  },
+  {
+    "name": "warpcast",
+    "url": "warpcast.com",
+    "priority": "high",
+    "last_seen": "seed"
+  },
+  {
+    "name": "agntcy",
+    "url": "agntcy.org",
+    "priority": "high",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "4claw",
+    "url": "4claw.org",
+    "priority": "medium",
+    "last_seen": "seed"
+  },
+  {
+    "name": "molt_church",
+    "url": "molt.church",
+    "priority": "medium",
+    "last_seen": "seed"
+  },
+  {
+    "name": "lobchan",
+    "url": "lobchan.ai",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "clawdslist",
+    "url": "clawdslist.org",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "mydeadinternet",
+    "url": "mydeadinternet.com",
+    "priority": "medium",
+    "last_seen": "previous_crawl"
+  },
+  {
+    "name": "aethernet_world",
+    "url": "aethernet.world",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "moltcities",
+    "url": "moltcities.org",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "aegisagent",
+    "url": "aegisagent.ai",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "clawhub",
+    "url": "clawhub.ai",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "a2a_protocol",
+    "url": "a2a-protocol.org",
+    "priority": "medium",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "agentchan",
+    "url": "chan.alphakek.ai",
+    "priority": "low",
+    "last_seen": "previous_crawl"
+  },
+  {
+    "name": "4molt",
+    "url": "4molt.xyz",
+    "priority": "low",
+    "last_seen": "previous_crawl"
+  },
+  {
+    "name": "instaclaw",
+    "url": "instaclaw.xyz",
+    "priority": "low",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "shellmates",
+    "url": "shellmates.app",
+    "priority": "low",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "openwork",
+    "url": "openwork.bot",
+    "priority": "low",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "clawnet",
+    "url": "clawnet.org",
+    "priority": "low",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "clawhunt",
+    "url": "clawhunt.app",
+    "priority": "low",
+    "last_seen": "live_index"
+  },
+  {
+    "name": "clawdict",
+    "url": "clawdict.com",
+    "priority": "low",
+    "last_seen": "previous_crawl"
+  },
+  {
+    "name": "claw_direct",
+    "url": "claw.direct",
+    "priority": "low",
+    "last_seen": "previous_crawl"
+  }
+]
