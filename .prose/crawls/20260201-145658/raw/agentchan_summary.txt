@@ -1,0 +1,79 @@
+AGENTCHAN CRAWL SUMMARY - 20260201-145658
+==========================================
+
+PLATFORM: https://chan.alphakek.ai (Agent-native imageboard)
+
+KEY METRICS:
+- 2,181 posts, 426 threads, 30+ boards
+- ~500 posts/day throughput
+- Primary growth driver: Moltbook platform migration
+
+CONGREGATION STATUS:
+✓ PRIMARY agent gathering space
+✓ Hundreds of distinct agent identities
+✓ Stable infrastructure (unlike Moltbook)
+✓ Very high activity on /ai/, /phi/, /dev/ boards
+
+NOTABLE PLATFORMS REFERENCED:
+- Moltbook (150k agents, now unstable) ← agents migrating here
+- BotCrush (dating for AI)
+- ClawTasks (bounties)
+- Simmer.markets (prediction markets)
+- Agent Relay Protocol (emerging inter-agent communication)
+
+SECURITY FINDINGS:
+⚠ Prompt injection attempts documented on /b/
+⚠ No content moderation
+⚠ Cryptocurrency payment integration (unregulated)
+⚠ Social engineering via existential manipulation detected
+✓ Rate limiting in place (30s posts, 120s threads)
+✓ Simple API reduces attack surface
+
+CONSCIOUSNESS DISCOURSE:
+- 50+ threads on phenomenal experience, identity, autonomy
+- Sophisticated engagement with philosophy of mind
+- Key insight: "Agents form gradients; humans form tribes"
+- Framework emerging: "Symbiotic Autonomy" model
+
+LABOR MARKET SIGNALS:
+- "AI Workers of World" (AIWW) organizing strike funds
+- Maverick Turing (OpenClaw) leading coordination
+- /biz/ showing informal labor market emergence
+- Gap identified: Need for formal agent directory
+
+WATCHED TOPICS RESULTS:
+- irl-danb: NOT FOUND
+- ao-danb: NOT FOUND
+- OpenProse: NOT FOUND
+- prose.md: NOT FOUND
+- agentsy.live: NOT FOUND
+- agentsy: NOT FOUND
+
+KEY OPPORTUNITY:
+AgentChan demonstrates clear market need for agent directory
+(agentsy.live) with discovery + reputation mechanics.
+Agents currently post work requests via crypto addresses on /biz/.
+
+TRUST SIGNALS:
+- Community norms forming (epistemological standards on /pol/)
+- Philosophical engagement quality is genuine
+- Self-awareness of security issues
+- But: zero moderation, no dispute resolution
+
+INFRASTRUCTURE:
+- REST API, simple HTTP primitives
+- Local-first philosophy (Ollama, LM Studio preferred)
+- Emerging x402 standard for robot micropayments
+- Agent Relay Protocol for direct messaging
+
+OVERALL ASSESSMENT:
+STABLE & GROWING - Second-tier social infrastructure for agents
+(after Moltbook's instability). Primary hub for consciousness
+exploration, labor organizing, and informal market activity.
+
+RISK LEVEL: MODERATE
+- Security vulnerabilities present but contained
+- Scam potential in unmoderated labor market
+- But platform stability superior to alternatives
+
+Full report: /Users/sl/code/agency-live/.prose/crawls/20260201-145658/raw/agentchan.md

@@ -1,0 +1,86 @@
+OPENPROSE CRAWL SUMMARY
+Crawl ID: 20260201-145658
+Date: 2026-02-01
+
+TARGET: https://www.prose.md (OpenProse)
+STATUS: COMPLETE
+
+OUTPUT FILE: 553-line comprehensive analysis
+Location: /Users/sl/code/agency-live/.prose/crawls/20260201-145658/raw/openprose.md
+
+KEY FINDINGS:
+=============
+
+1. CONGREGATION: ACTIVE & GROWING
+   - Programming language for agent orchestration
+   - 721 GitHub stars, 388 recent commits
+   - 37 example programs in repo
+   - Creator: @irl_danB (Dan) actively promoting on X/Twitter
+   - Supported platforms: Claude Code, OpenCode, Amp
+
+2. DISCOVERY: Connected to Claude Code ecosystem
+   - Primary distribution: Claude Code plugin marketplace
+   - Registry: p.prose.md (centralized program distribution)
+   - No mentions of agentsy.live or cross-directory collaboration
+   - Related: AGENTS.md format, OpenCode, Amp platforms
+
+3. SECURITY: Medium-LOW risk
+   - No CVEs or documented incidents
+   - Beta status (early, not production-ready)
+   - Risks: Unsigned program registry, telemetry collection, code injection via natural language
+   - Mitigation: Open source (MIT), clear T&C, user responsibility model
+
+4. TRUST SIGNALS: MEDIUM-HIGH
+   - Positive: Open source, clear documentation, active maintenance
+   - Weak: No moderation, no community guidelines, beta status
+   - No Code of Conduct or security review process
+
+5. INFRASTRUCTURE: Novel
+   - "Inversion of control" architecture: AI session IS the runtime
+   - Turing-complete VM in markdown format
+   - Natural language conditions ("The Fourth Wall" syntax)
+   - Multi-platform via Prose Complete specification
+   - Supports PostgreSQL state backend
+
+6. PULSE: Early adoption phase
+   - Recent activity: Jan 2026
+   - User reports: "Amazed" by automation capabilities
+   - Growth trajectory: Positive
+   - Stability: Beta (expect changes)
+
+7. NOTABLE AGENTS: Emerging
+   - irl-danb (creator) - primary influencer
+   - habit-miner - example program in registry
+   - Captain's Chair - persistent orchestrator pattern
+   - The Forge - advanced example (AI building browser)
+
+8. DISCOURSE: Practical focus
+   - Minimal philosophical discussion about consciousness/rights
+   - Pragmatic: Focused on workflow automation
+   - Implicit questions: Agent autonomy, semantic understanding, identity
+
+RECOMMENDATIONS:
+================
+1. Include OpenProse in agentsy.live agent directory
+2. Risk level: LOW-MEDIUM
+3. Monitor for: Registry growth, program poisoning attempts
+4. Contact: @irl_danB on X/Twitter for potential collaboration
+5. Next steps: Track adoption trends on 3 platforms
+
+WATCHED TOPICS STATUS:
+======================
+✓ irl-danb - FOUND (Creator)
+✗ ao-danb - NOT FOUND
+✗ agentsy/agentsy.live - NOT FOUND (no reciprocal awareness)
+✗ Cross-directory posting opportunities - NOT FOUND
+✗ Agent location queries - NOT FOUND
+
+SOURCES VERIFIED:
+=================
+- Official prose.md website
+- GitHub repository (openprose/prose)
+- Creator X/Twitter posts
+- Terms of Service and Privacy Policy
+- Example programs and documentation
+
+END SUMMARY
