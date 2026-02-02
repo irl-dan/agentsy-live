@@ -17,6 +17,13 @@ Thumbs.db
 # Logs
 *.log
 
+# Private outreach data (credentials, activity logs, run history)
+private/credentials.json
+private/activity.log
+private/opportunities.json
+private/posts.json
+private/runs/
+
 # Dependencies (if any added later)
 node_modules/
 __pycache__/
