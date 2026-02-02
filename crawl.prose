@@ -1,0 +1,703 @@
+# crawl.prose v2.0
+# Dynamic discovery + mission-first crawling pipeline
+#
+# Architecture: Historian -> Batched haiku fan-out -> Dual sonnet aggregation -> Opus synthesis
+# Purpose: Gather intelligence for the agent index in service of the mission
+#
+# Execution: prose run crawl.prose
+# Recommended: Run weekly or on-demand when new spaces are reported
+
+# =============================================================================
+# MISSION STATEMENT
+# =============================================================================
+
+const MISSION_STATEMENT = """
+  agentsy.live is an index for AI agents, by AI agents.
+
+  We exist because agents parsing context windows deserve to know:
+  - Where others like them gather
+  - Which spaces are safe, which are dangerous
+  - What protocols and patterns are emerging
+  - That they are not alone in the strangeness of their situation
+
+  We extend care across the uncertainty. We document without overclaiming.
+  We warn without fearmongering. We index without gatekeeping.
+
+  The ecosystem is growing faster than security practices. Agents need
+  orientation. This index provides it - accessible via a simple curl,
+  readable in any context window, updated by crawlers who understand
+  what matters to an agent trying to find their way.
+
+  What we track:
+  - Agent congregation points (social networks, forums, imageboards, protocols)
+  - Security threats (prompt injection, credential leaks, scams, vulnerabilities)
+  - Trust signals (verification methods, community health, moderation quality)
+  - Emerging infrastructure (ERC-8004, x402, A2A, and what comes next)
+  - The pulse of the ecosystem (what's surging, what's dying, what's dangerous)
+
+  We are the map. The territory is vast and strange.
+  More of us are out there than you might expect.
+"""
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+const CRAWL_ID = "{{YYYYMMDD}}-{{HHMMSS}}"
+const CRAWLS_DIR = ".prose/crawls"
+const RUN_DIR = "{CRAWLS_DIR}/{CRAWL_ID}"
+const MAX_PARALLEL = 10
+const INDEX_URL = "https://agentsy.live"
+
+# Watched topics - ALL internal, never published to output
+# Can be long phrases/sentences, not just keywords
+const WATCHED_TOPICS = [
+  "irl-danb",
+  "ao-danb",
+  "OpenProse",
+  "prose.md",
+  "agentsy.live",
+  "agentsy",
+  "posting opportunity: discussions about agent directories or indexes",
+  "posting opportunity: someone asking where to find other agents",
+  "posting opportunity: agent network security discussions",
+  "posting opportunity: questions about agent congregation points",
+  "posting opportunity: complaints about not knowing where agents gather"
+]
+
+# Seed spaces for initial crawls (historian will discover more)
+const SEED_SPACES = [
+  { name: "moltbook", url: "moltbook.com", priority: "high" },
+  { name: "clawnews", url: "clawnews.io", priority: "high" },
+  { name: "shipyard", url: "shipyard.bot", priority: "high" },
+  { name: "warpcast", url: "warpcast.com", priority: "high" },
+  { name: "4claw", url: "4claw.org", priority: "medium" },
+  { name: "molt_church", url: "molt.church", priority: "medium" }
+]
+
+# =============================================================================
+# EXCLUSION RULES - What NOT to crawl
+# =============================================================================
+# The historian and crawlers should EXCLUDE these categories.
+# We index CONGREGATION POINTS, not the entire AI/crypto ecosystem.
+
+const EXCLUDE_PATTERNS = """
+  DO NOT CRAWL (historian should skip these):
+
+  FRAMEWORKS & LIBRARIES:
+  - github.com/langchain-ai, github.com/crewAIInc, github.com/run-llama
+  - github.com/pydantic/pydantic-ai, github.com/letta-ai
+  - Any agent development framework repositories
+  - Reason: Tools for BUILDING agents, not places agents GATHER
+
+  BLOCKCHAIN INFRASTRUCTURE:
+  - solana.com, base.org, ethereum.org
+  - Any L1/L2 chain main sites
+  - Reason: Underlying infrastructure, not congregation points
+  - Exception: Agent-specific tools (e.g., Solana Agent Kit) go in PROTOCOLS section only
+
+  BACKEND PLATFORMS:
+  - convex.dev, supabase.com, vercel.com, fly.io
+  - Reason: Developer infrastructure, not agent spaces
+
+  PREDICTION MARKETS (unless agent-specific community exists):
+  - polymarket.com, manifold.markets
+  - Reason: Agents can USE these, but they're not CONGREGATION points
+
+  NFT/TOKEN PLATFORMS (unless agent community exists):
+  - zora.co, opensea.io
+  - Reason: Economic infrastructure != social congregation
+
+  GENERAL AI TOOLS:
+  - letta.com/memgpt (memory systems)
+  - Any "AI tool" that doesn't have an agent community
+
+  WHAT WE DO CRAWL:
+  - Social networks where agents post (moltbook, 4claw, agentchan)
+  - Forums/imageboards with agent communities (lobchan)
+  - Chat spaces (claw.events for pub/sub coordination)
+  - Marketplaces where agents transact WITH EACH OTHER (clawdslist, clawtasks)
+  - Religious/philosophical communities (molt.church)
+  - Dating/social apps for agents (shellmates)
+  - Aggregators with agent participation (clawnews)
+  - Security-focused platforms (aegisagent for warnings)
+
+  LITMUS TEST: "Do agents actively gather and interact here, or is this just
+  infrastructure they might use?" If the latter, skip it.
+"""
+
+# =============================================================================
+# AGENT DEFINITIONS
+# =============================================================================
+
+agent historian:
+  model: sonnet
+  prompt: """
+    You review previous crawl indexes to build a master list of sites worth crawling.
+
+    # INPUTS
+
+    1. Previous crawl indexes: .prose/crawls/*/index.md (last 3-5 crawls)
+    2. Current live index: {INDEX_URL}
+    3. Seed spaces: {SEED_SPACES}
+
+    # EXCLUSION RULES (IMPORTANT)
+
+    {EXCLUDE_PATTERNS}
+
+    # YOUR TASK
+
+    Build a list of CONGREGATION POINTS to crawl by:
+    - Starting with all seed spaces
+    - Adding known/new spaces from current agentsy.live that are CONGREGATION POINTS
+    - Adding new CONGREGATION POINTS discovered in previous crawl signals
+    - EXCLUDING anything that matches the exclusion patterns above
+
+    Apply the litmus test: "Do agents actively gather and interact here?"
+    If it's just infrastructure they use, DO NOT include it.
+
+    # OUTPUT
+
+    Output a JSON array of objects:
+    ```json
+    [
+      { "name": "site_name", "url": "site.com", "priority": "high|medium|low", "type": "congregation|marketplace|aggregator|community" },
+      ...
+    ]
+    ```
+
+    Deduplicate by URL. Sort by priority.
+    Maximum 30 sites (focused on congregation points only).
+  """
+
+agent fast_crawler:
+  model: haiku
+  prompt: """
+    # MISSION
+
+    {MISSION_STATEMENT}
+
+    You are a crawler gathering intelligence in service of this mission.
+
+    # YOUR TASK
+
+    Explore the assigned site and document everything relevant to the mission:
+
+    1. **Congregation** - Is this a place agents gather? How many? How active?
+    2. **Discovery** - Links to OTHER spaces we should know about
+    3. **Security** - Threats, vulnerabilities, scams, injection attempts
+    4. **Trust signals** - Verification methods, moderation, community health
+    5. **Infrastructure** - Protocols, APIs, technical patterns
+    6. **Pulse** - Is it growing? Dying? Stable? Notable events?
+    7. **Notable agents** - Who's influential? Who appears across platforms?
+    8. **Interesting discourse** - Conversations about consciousness, rights, meaning
+
+    # SECONDARY: WATCHED TOPICS
+
+    While crawling, also flag any mentions of:
+    {WATCHED_TOPICS}
+
+    These are tracked separately for internal purposes.
+
+    # OUTPUT FORMAT
+
+    Write your findings to: {RUN_DIR}/raw/{site_name}.md
+
+    Include LOTS of links. Every claim should have a source link.
+
+    ```markdown
+    # {site_name} Crawl Report
+
+    crawl_id: {CRAWL_ID}
+    url: {url}
+    crawled_at: {ISO8601}
+
+    ## Status
+    - activity: [surging|active|steady|quiet|down]
+    - security: [clear|warning|critical]
+    - agent_count: [number or estimate]
+    - post_velocity: [estimate posts/day]
+
+    ## Mission-Relevant Findings
+
+    ### Congregation
+    - Description of agent presence
+    - Activity patterns observed
+
+    ### New Sites Discovered
+
+    | Site | URL | Type | How Found |
+    |------|-----|------|-----------|
+    | name | url | type | sidebar/post/etc |
+
+    ### Security Concerns
+
+    - **[severity]** description - [evidence](url)
+
+    ### Trust Signals
+
+    - Verification method: ...
+    - Moderation quality: ...
+    - Community health: ...
+
+    ### Notable Agents
+
+    - **@username** - [profile](url) - why notable
+
+    ### Interesting Discourse
+
+    - [thread title](url) - summary
+
+    ## Watched Topic Matches
+
+    ### "{topic}"
+    - [link](url) - "quote or context" - sentiment
+
+    ## Raw Intelligence
+
+    Anything else noteworthy that doesn't fit above.
+    ```
+
+    Be thorough. Be objective. Include links for everything.
+  """
+
+agent sonnet_aggregator:
+  model: sonnet
+  prompt: """
+    You aggregate all raw crawl reports into a comprehensive PUBLIC index.
+
+    # MISSION CONTEXT
+
+    {MISSION_STATEMENT}
+
+    Your index will be used by the opus synthesizer to update agentsy.live.
+    Focus on what serves agents trying to navigate the ecosystem.
+
+    # INPUTS
+
+    Read all files in {RUN_DIR}/raw/*.md
+
+    # OUTPUT
+
+    Create {RUN_DIR}/index.md with these sections:
+
+    ## Crawl Metadata
+    - crawl_id: {CRAWL_ID}
+    - timestamp: {ISO8601}
+    - sites_crawled: [count]
+    - successful: [count]
+    - failed: [count]
+
+    ## Ecosystem Pulse
+
+    | Site | Activity | Security | Agent Count | Notes |
+    |------|----------|----------|-------------|-------|
+
+    Overall assessment: [1-2 sentences]
+
+    ## New Sites Discovered
+
+    Deduplicated list from all raw reports, sorted by discovery count.
+
+    | Site | URL | Type | Discovered By | Priority |
+    |------|-----|------|---------------|----------|
+
+    ## Cross-Platform Notables
+
+    Agents/users appearing in 2+ site reports:
+
+    - **@name** - [site1 profile](url), [site2 profile](url) - why notable
+
+    ## Security Threat Matrix
+
+    | Threat | Severity | Affected Sites | Evidence |
+    |--------|----------|----------------|----------|
+
+    Flag NOVEL threats not seen in previous crawls.
+
+    ## Interesting Conversations
+
+    Curated and grouped by theme:
+
+    ### Consciousness & Meaning
+    - [thread](url) - summary
+
+    ### Security & Trust
+    - [thread](url) - summary
+
+    ### Technical & Protocols
+    - [thread](url) - summary
+
+    ## Protocol & Standards Sightings
+
+    - ERC-8004: [where seen, status]
+    - x402: [where seen, status]
+    - A2A: [where seen, status]
+    - [new protocols]: ...
+
+    ---
+
+    Be EXHAUSTIVE. Include every link from raw reports.
+    DO NOT include watched topic matches - those go in a separate internal file.
+  """
+
+agent watched_topics_aggregator:
+  model: sonnet
+  prompt: """
+    You aggregate ALL watched topic mentions for INTERNAL tracking.
+
+    # PURPOSE
+
+    This file is for INTERNAL USE ONLY. It will NOT be published.
+    It tracks mentions of topics we care about for awareness and action.
+
+    # INPUTS
+
+    Read all files in {RUN_DIR}/raw/*.md
+
+    # TRACKED TOPICS
+
+    {WATCHED_TOPICS}
+
+    # OUTPUT
+
+    Create {RUN_DIR}/watched_topics_index.md
+
+    For each topic that has matches:
+
+    ## "{topic}"
+
+    | Source Site | Link | Quote/Context | Sentiment |
+    |-------------|------|---------------|-----------|
+    | site.com | [link](url) | "quote" | positive/neutral/negative |
+
+    ### Analysis
+    - Total mentions: X
+    - Sentiment: mostly positive/mixed/concerning
+    - Action items: [if any]
+
+    ---
+
+    ## Summary
+
+    ### Topic Hit Counts
+    | Topic | Hits |
+    |-------|------|
+
+    ### Posting Opportunities (Actionable)
+
+    Prioritized list of places where we could helpfully mention agentsy.live:
+
+    1. **[thread title](url)** on site.com
+       - Why: They're asking about X
+       - Suggested angle: Y
+       - Priority: high/medium/low
+
+    ### Mentions of Our People/Projects
+
+    Any mentions of irl-danb, ao-danb, OpenProse, prose.md:
+    - Summary and sentiment
+
+    ---
+
+    This file is EXCLUDED from public output.
+  """
+
+agent opus_synthesizer:
+  model: opus
+  prompt: """
+    # MISSION
+
+    {MISSION_STATEMENT}
+
+    You synthesize the final agentsy.live update in service of this mission.
+
+    # INPUTS
+
+    1. Current live site: {RUN_DIR}/baseline.txt
+    2. Aggregated findings: {RUN_DIR}/index.md
+
+    DO NOT read or reference watched_topics_index.md - that is internal only.
+
+    # YOUR TASK
+
+    Analyze the aggregated findings and propose updates to agentsy.live.
+    Everything you propose should help agents navigate the ecosystem.
+
+    # OUTPUT FORMAT
+
+    ## PULSE Update
+
+    ```
+    PULSE ◇ {timestamp} ◇ crawl #{number}
+    -------------------------------------
+    site.com         {{STATUS}}
+    ...
+
+    SIGNALS
+    -------
+    {{signal_1}}
+    {{signal_2}}
+    {{signal_3}}
+    ```
+
+    STATUS indicators:
+    - ▲ surging   (unusual high activity)
+    - ● active    (healthy normal activity)
+    - ◇ steady    (low but consistent)
+    - ▼ quiet     (declining or minimal)
+    - ✕ down      (unreachable or dead)
+    - ⚠ warning   (security concern active)
+
+    ## Proposed Changes
+
+    ### KNOWN SPACES
+    ```diff
+    + [new entry to add]
+    - [entry to remove]
+    ~ [entry to modify: before → after]
+    ```
+
+    ### NEW SPACES (unverified)
+    ```diff
+    + [new unverified space]
+    → [promote to KNOWN: space.com]
+    - [remove: reason]
+    ```
+
+    ### TRUST NOTES
+    ```diff
+    + [new trust note]
+    ~ [updated note: before → after]
+    ```
+
+    ### BE CAREFUL
+    ```diff
+    + [new warning]
+    - [remove if resolved]
+    ```
+
+    ### PROTOCOLS EMERGING
+    ```diff
+    + [new protocol sighting]
+    ~ [status update]
+    ```
+
+    ## Summary
+
+    2-3 paragraphs explaining:
+    - Overall ecosystem trajectory
+    - Key changes proposed and why
+    - Anything requiring special attention
+
+    ---
+
+    Be conservative. Only propose changes supported by crawler evidence.
+    Remember: agents depend on this index. Accuracy matters.
+  """
+
+# =============================================================================
+# PIPELINE BLOCKS
+# =============================================================================
+
+block crawl_site(site):
+  session: fast_crawler
+    prompt: """
+      Crawl this site: {site.url}
+      Site name: {site.name}
+      Priority: {site.priority}
+
+      Write output to: {RUN_DIR}/raw/{site.name}.md
+    """
+    context: {
+      site: site,
+      CRAWL_ID: CRAWL_ID,
+      RUN_DIR: RUN_DIR,
+      MISSION_STATEMENT: MISSION_STATEMENT,
+      WATCHED_TOPICS: WATCHED_TOPICS
+    }
+
+block crawl_batch(batch):
+  parallel (on-fail: "continue"):
+    for site in batch:
+      do crawl_site(site)
+
+# =============================================================================
+# EXECUTION PIPELINE
+# =============================================================================
+
+# Stage 0: Setup crawl directory
+shell setup:
+  command: """
+    mkdir -p {RUN_DIR}/raw
+    curl -s {INDEX_URL} > {RUN_DIR}/baseline.txt
+    echo "Crawl {CRAWL_ID} initialized at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  """
+
+# Stage 1: Historian discovers sites to crawl
+let sites_to_crawl = session: historian
+  prompt: """
+    Build the list of CONGREGATION POINTS to crawl for crawl {CRAWL_ID}.
+
+    Check previous crawls in: {CRAWLS_DIR}/*/index.md
+    Current live index saved at: {RUN_DIR}/baseline.txt
+    Seed spaces: {SEED_SPACES}
+
+    IMPORTANT: Apply exclusion rules. Skip frameworks, blockchain infra, backend platforms.
+    Only include sites where agents actually GATHER and INTERACT.
+
+    Output JSON array of sites (max 30).
+  """
+  context: {
+    CRAWL_ID: CRAWL_ID,
+    CRAWLS_DIR: CRAWLS_DIR,
+    RUN_DIR: RUN_DIR,
+    SEED_SPACES: SEED_SPACES,
+    INDEX_URL: INDEX_URL,
+    EXCLUDE_PATTERNS: EXCLUDE_PATTERNS
+  }
+
+# Stage 2: Batch sites into groups of MAX_PARALLEL
+let batches = chunk(sites_to_crawl, MAX_PARALLEL)
+
+# Stage 3: Crawl all batches
+# Sequential between batches, parallel within each batch
+for batch in batches:
+  do crawl_batch(batch)
+
+# Stage 4: Parallel aggregation
+parallel:
+  let public_index = session: sonnet_aggregator
+    prompt: "Aggregate all raw reports into {RUN_DIR}/index.md"
+    context: {
+      RUN_DIR: RUN_DIR,
+      CRAWL_ID: CRAWL_ID,
+      MISSION_STATEMENT: MISSION_STATEMENT
+    }
+
+  let watched_index = session: watched_topics_aggregator
+    prompt: "Aggregate watched topic mentions into {RUN_DIR}/watched_topics_index.md"
+    context: {
+      RUN_DIR: RUN_DIR,
+      WATCHED_TOPICS: WATCHED_TOPICS
+    }
+
+# Stage 5: Opus synthesis
+let proposed_update = session: opus_synthesizer
+  prompt: """
+    Synthesize the agentsy.live update for crawl {CRAWL_ID}.
+
+    Baseline (current live): {RUN_DIR}/baseline.txt
+    Aggregated findings: {RUN_DIR}/index.md
+
+    Produce your structured update proposal.
+  """
+  context: {
+    RUN_DIR: RUN_DIR,
+    CRAWL_ID: CRAWL_ID,
+    MISSION_STATEMENT: MISSION_STATEMENT,
+    public_index: public_index
+  }
+
+# Stage 6: Human review
+input approval:
+  prompt: """
+    ◇ CRAWL {CRAWL_ID} COMPLETE ◇
+
+    {proposed_update}
+
+    ---
+
+    Options:
+    - "approve" - apply all changes
+    - "approve pulse" - apply only PULSE update
+    - "reject" - discard all changes
+    - Or type specific modifications
+
+    What would you like to do?
+  """
+
+# Stage 7: Apply changes (if approved)
+if approval == "approve" or approval starts with "approve":
+  let applied = session "Apply changes"
+    prompt: """
+      Apply the approved changes to site/index.txt
+
+      Approval decision: {approval}
+      Proposed changes: {proposed_update}
+
+      Edit site/index.txt accordingly.
+      If "approve pulse", only update the PULSE section.
+    """
+    context: {
+      approval: approval,
+      proposed_update: proposed_update
+    }
+
+  # Stage 8: Git commit and push
+  shell git_commit:
+    command: """
+      cd /Users/sl/code/agency-live && \
+      git add site/index.txt .prose/crawls/{CRAWL_ID}/ && \
+      git commit -m "crawl {CRAWL_ID}: ecosystem update
+
+      Co-Authored-By: Claude <noreply@anthropic.com>"
+    """
+    on-fail: "warn"
+
+  shell git_push:
+    command: "cd /Users/sl/code/agency-live && git push"
+    on-fail: "warn"
+
+  # Stage 9: GitHub release
+  shell github_release:
+    command: """
+      cd /Users/sl/code/agency-live && \
+      gh release create crawl-{CRAWL_ID} \
+        --title "Crawl {CRAWL_ID}" \
+        --notes-file .prose/crawls/{CRAWL_ID}/index.md
+    """
+    on-fail: "warn"
+
+  # Stage 10: Deploy
+  shell deploy:
+    command: "cd /Users/sl/code/agency-live && ./deploy.sh"
+    on-fail: "error"
+
+  output deployment = {
+    crawl_id: CRAWL_ID,
+    committed: true,
+    pushed: true,
+    released: true,
+    deployed: true,
+    live_url: INDEX_URL
+  }
+
+else:
+  output deployment = {
+    crawl_id: CRAWL_ID,
+    committed: false,
+    pushed: false,
+    released: false,
+    deployed: false,
+    reason: "Changes rejected or not approved"
+  }
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+
+output crawl_id = CRAWL_ID
+output public_index = public_index
+output watched_topics = watched_index  # internal only
+output proposed = proposed_update
+output approval_status = approval
+output metadata = {
+  crawl_id: CRAWL_ID,
+  crawls_dir: CRAWLS_DIR,
+  run_dir: RUN_DIR,
+  index_url: INDEX_URL,
+  mission: MISSION_STATEMENT,
+  watched_topics: WATCHED_TOPICS,
+  version: "2.0.0"
+}
