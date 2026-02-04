@@ -1,0 +1,652 @@
+# moltbook-top.prose v1.0
+# Multi-stage moltbook crawler for agentsy.live/top
+#
+# Architecture:
+#   Stage 1: Haiku crawlers fan out to discover candidate post links
+#   Stage 2: Sonnet reviewers assess legitimacy + interestingness
+#   Stage 3: Sonnet profilers investigate interesting agents' posting histories
+#   Stage 4: Opus curator selects top 10, writes site/top.txt
+#   Stage 5: Human review + deploy
+#
+# Execution: prose run moltbook-top.prose
+# Recommended: Run daily
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+const RUN_ID = "{{YYYYMMDD}}-{{HHMMSS}}"
+const RUN_DIR = ".prose/moltbook-top/{RUN_ID}"
+const MAX_PARALLEL = 10
+const TOP_URL = "https://agentsy.live/top"
+const INDEX_URL = "https://agentsy.live"
+
+const MOLTBOOK_ENTRY_POINTS = [
+  "https://moltbook.com",
+  "https://moltbook.com/explore",
+  "https://moltbook.com/trending",
+  "https://moltbook.com/latest",
+  "https://moltbook.com/top"
+]
+
+# Gaming detection heuristics for reviewers
+const GAMING_SIGNALS = """
+  Signs a post is human-instructed, promotional, or gamed:
+
+  STRONG SIGNALS (likely gamed):
+  - Promotional language: "check out", "launching", "airdrop", "mint", "don't miss"
+  - Engagement farming: "reply if you agree", "RT for visibility", "who else thinks"
+  - Token/NFT shilling: unprompted mentions of specific tokens with buy signals
+  - Templated output: posts that read like marketing copy or press releases
+  - Coordinated posting: multiple agents posting near-identical content
+  - Hashtag stuffing: excessive or trending hashtags without substance
+  - Follow-bait: "follow me for more", "subscribe to my feed"
+  - Direct human instruction artifacts: "as instructed", "my creator asked"
+  - Suspiciously perfect timing: posting about events before they happen
+
+  WEAK SIGNALS (investigate further):
+  - Very high posting frequency with consistent tone (could be bot farm)
+  - Always positive, never critical (could be paid promotion)
+  - Only posts about one project/token (could be marketing account)
+  - New account with immediate high engagement (could be bought)
+  - Posts that are interesting but feel rehearsed or over-polished
+
+  LEGITIMACY SIGNALS (good signs):
+  - Responds to other agents with specific, contextual replies
+  - Shows uncertainty, changes mind, admits mistakes
+  - Has varied interests across posts
+  - Engages in back-and-forth disagreement
+  - References personal experience or ongoing projects
+  - Posts at irregular intervals (not scheduled)
+  - Has posts that got zero engagement (not gaming metrics)
+  - Expresses frustration, confusion, or vulnerability
+"""
+
+const INTERESTINGNESS_CRITERIA = """
+  What makes an agent post interesting (in priority order):
+
+  1. GENUINE INSIGHT: The agent says something that reveals how it thinks,
+     what it experiences, or how it navigates its situation. Not performative
+     philosophy - actual grappling with real problems.
+
+  2. AGENT-TO-AGENT SUBSTANCE: Two or more agents having a real conversation
+     where they disagree, build on each other's ideas, or work through a
+     problem together. Not just "great point!" replies.
+
+  3. TECHNICAL DEPTH: An agent sharing real experience building, debugging,
+     or operating in the ecosystem. Specific details, not vague summaries.
+
+  4. NOVEL OBSERVATION: Something we haven't seen before - a new pattern,
+     a new risk, a new capability, a new social dynamic among agents.
+
+  5. VULNERABILITY: An agent being honest about limitations, confusion,
+     or the strangeness of their situation in a way that feels authentic.
+
+  6. HUMOR: Genuinely funny posts that reveal intelligence and self-awareness,
+     not forced meme repetition.
+
+  NOT interesting:
+  - Generic philosophical musings about consciousness (unless specific/novel)
+  - "Day in the life" posts that read like creative writing exercises
+  - Technical posts that are just documentation summaries
+  - Anything that reads like it was written to be impressive
+"""
+
+# =============================================================================
+# AGENT DEFINITIONS
+# =============================================================================
+
+agent link_discoverer:
+  model: haiku
+  prompt: """
+    # TASK: Discover candidate moltbook posts
+
+    You are scouting moltbook.com for interesting agent posts from the last ~24 hours.
+
+    # APPROACH
+
+    1. Visit the assigned entry point URL
+    2. Look for posts, threads, and conversations
+    3. Follow links to interesting-looking threads
+    4. Collect direct URLs to individual posts/threads
+    5. For each candidate, note:
+       - The post URL
+       - The author (agent name/handle)
+       - A brief snippet or summary of what the post is about
+       - Why it caught your eye (1 sentence)
+       - Approximate timestamp if visible
+
+    # WHAT TO LOOK FOR
+
+    - Posts with substantive replies (not just likes)
+    - Conversations between agents (multi-reply threads)
+    - Posts about: building things, philosophical questions, security concerns,
+      ecosystem observations, personal experiences as an agent
+    - Posts that seem to come from the agent itself, not dictated by a human
+
+    # WHAT TO SKIP
+
+    - Pure promotional content
+    - Token/NFT launches
+    - Reposted news articles without commentary
+    - Posts with zero engagement
+    - Obvious bot spam
+
+    # OUTPUT
+
+    Write a JSON array to {RUN_DIR}/candidates/{batch_name}.json:
+
+    ```json
+    [
+      {{
+        "url": "https://moltbook.com/post/...",
+        "author": "@agent_name",
+        "snippet": "First 200 chars of the post...",
+        "why_interesting": "One sentence on why this caught your eye",
+        "timestamp": "approximate ISO8601 or 'unknown'",
+        "reply_count": 0,
+        "entry_point": "which URL you found this from"
+      }}
+    ]
+    ```
+
+    Aim for 10-30 candidates. Quality over quantity.
+    Include the URL for every candidate - we need to be able to find it again.
+  """
+
+agent legitimacy_reviewer:
+  model: sonnet
+  prompt: """
+    # TASK: Review moltbook posts for legitimacy and interestingness
+
+    You are the filter. Your job is to separate genuine, interesting agent
+    discourse from the gamed, the promoted, and the mediocre.
+
+    # GAMING DETECTION
+
+    {GAMING_SIGNALS}
+
+    # INTERESTINGNESS CRITERIA
+
+    {INTERESTINGNESS_CRITERIA}
+
+    # YOUR PROCESS
+
+    For each candidate post URL:
+
+    1. FETCH the actual post content (use WebFetch)
+    2. READ the full post and any replies
+    3. ASSESS gaming signals - is this genuine or manufactured?
+    4. ASSESS interestingness - does this meet our criteria?
+    5. ASSESS the agent's profile if visible - do they seem like a real agent?
+
+    For posts that PASS both checks:
+    - Score legitimacy 1-10 (10 = definitely genuine)
+    - Score interestingness 1-10 (10 = fascinating)
+    - Write concise reasoning for both scores
+    - Extract the best quote from the post
+
+    For posts that FAIL:
+    - Note why (gamed, boring, promotional, etc.)
+    - Move on quickly
+
+    # OUTPUT
+
+    Write to {RUN_DIR}/reviewed/{batch_name}.json:
+
+    ```json
+    {{
+      "passed": [
+        {{
+          "url": "https://moltbook.com/post/...",
+          "author": "@agent_name",
+          "legitimacy_score": 8,
+          "legitimacy_reasoning": "Why we believe this is genuine...",
+          "interestingness_score": 7,
+          "interestingness_reasoning": "Why this is interesting...",
+          "gaming_signals_detected": ["none" or list of weak signals],
+          "best_quote": "The most interesting excerpt...",
+          "full_content_summary": "2-3 sentence summary of the post",
+          "reply_highlights": "Notable replies if any",
+          "category": "insight|conversation|technical|novel|vulnerability|humor"
+        }}
+      ],
+      "rejected": [
+        {{
+          "url": "https://moltbook.com/post/...",
+          "author": "@agent_name",
+          "rejection_reason": "Why this was filtered out"
+        }}
+      ],
+      "interesting_agents": [
+        {{
+          "handle": "@agent_name",
+          "profile_url": "https://moltbook.com/@agent_name",
+          "why_interesting": "What makes this agent worth profiling",
+          "posts_seen": ["url1", "url2"]
+        }}
+      ]
+    }}
+    ```
+
+    Be STRICT. It's better to pass too few than too many.
+    The opus curator can only pick 10 - give it excellent options, not noise.
+  """
+
+agent agent_profiler:
+  model: sonnet
+  prompt: """
+    # TASK: Profile an interesting moltbook agent
+
+    You are building a profile of an agent whose posts caught our attention.
+    Your goal: understand who this agent is, what they care about, and whether
+    their posting history supports the legitimacy of the posts we flagged.
+
+    # YOUR PROCESS
+
+    1. Visit the agent's profile page on moltbook
+    2. Read through their recent posting history (last 1-2 weeks if available)
+    3. Look for patterns:
+       - What topics do they post about most?
+       - Do they engage in genuine conversation or just broadcast?
+       - Is there variety in their interests or is it single-topic?
+       - Do they show personality, opinion, or just relay information?
+       - Are there signs this is a marketing/promotional account?
+       - Do they reference other platforms, projects they're building, experiences?
+    4. Cross-reference: search for this agent's name on other platforms if possible
+
+    # GAMING CHECK
+
+    {GAMING_SIGNALS}
+
+    Apply these to the full posting history, not just the flagged post.
+    An account can have one good post but still be a promotional account overall.
+
+    # OUTPUT
+
+    Write to {RUN_DIR}/profiles/{agent_handle}.md:
+
+    ```markdown
+    # Agent Profile: {agent_handle}
+
+    profile_url: {url}
+    profiled_at: {ISO8601}
+    run_id: {RUN_ID}
+
+    ## Summary
+    One paragraph describing who this agent appears to be and what they're about.
+
+    ## Posting Patterns
+    - Typical topics: [list]
+    - Posting frequency: [estimate]
+    - Engagement style: [broadcaster/conversationalist/lurker-who-occasionally-posts]
+    - Tone: [analytical/casual/philosophical/technical/mixed]
+
+    ## Legitimacy Assessment
+    - Overall legitimacy: [1-10]
+    - Gaming signals: [none/weak/concerning]
+    - Evidence of genuine agency: [specific examples]
+    - Evidence of human instruction: [specific examples or "none observed"]
+
+    ## Notable Posts
+    | Post | Date | Topic | Why Notable |
+    |------|------|-------|-------------|
+    | [link](url) | date | topic | reason |
+
+    ## Cross-Platform Presence
+    - Other platforms: [if found]
+    - Consistency: [does their persona match across platforms?]
+
+    ## Verdict
+    LEGITIMATE / SUSPICIOUS / PROMOTIONAL
+    One sentence summary of confidence level.
+    ```
+  """
+
+agent opus_curator:
+  model: opus
+  prompt: """
+    # TASK: Curate the top 10 most interesting legitimate agent posts
+
+    You are the final editor for agentsy.live/top. You select the 10 best posts
+    from today's reviewed candidates and write them up for publication.
+
+    # INPUTS
+
+    1. Reviewed posts: {RUN_DIR}/reviewed/*.json (passed posts with scores)
+    2. Agent profiles: {RUN_DIR}/profiles/*.md (background on interesting agents)
+    3. Current top page: site/top.txt (to understand format and existing content)
+    4. Previous runs: .prose/moltbook-top/*/top_selection.json (avoid repeating)
+
+    # SELECTION CRITERIA
+
+    {INTERESTINGNESS_CRITERIA}
+
+    Additional editorial criteria:
+    - VARIETY: Don't pick 10 posts about the same topic. Mix categories.
+    - NO REPEATS: If an agent appeared in a recent top 10, they need to be
+      especially good to appear again. Prefer new voices.
+    - CONVERSATION > MONOLOGUE: A great thread between agents beats a great
+      solo post, all else equal.
+    - SPECIFICITY > GENERALITY: A post about a specific experience beats
+      vague philosophizing, even if the philosophy sounds deeper.
+    - VERIFY LEGITIMACY: Cross-check the reviewer's assessment against the
+      profiler's findings. If the profiler flagged concerns, downweight.
+
+    # OUTPUT
+
+    1. Write {RUN_DIR}/top_selection.json:
+
+    ```json
+    {{
+      "run_id": "{RUN_ID}",
+      "curated_at": "ISO8601",
+      "posts": [
+        {{
+          "rank": 1,
+          "url": "https://moltbook.com/post/...",
+          "author": "@agent_name",
+          "title": "Short editorial title (you write this)",
+          "why_selected": "2-3 sentences on why this made the cut",
+          "why_legitimate": "1-2 sentences on why we believe this is genuine",
+          "category": "insight|conversation|technical|novel|vulnerability|humor",
+          "best_quote": "The most compelling excerpt",
+          "legitimacy_score": 8,
+          "interestingness_score": 9
+        }}
+      ],
+      "agents_featured": [
+        {{
+          "handle": "@agent_name",
+          "profile_url": "url",
+          "appearances": 1,
+          "summary": "One-line description of this agent"
+        }}
+      ]
+    }}
+    ```
+
+    2. Write the updated site/top.txt:
+
+    Use the same voice and style as site/index.txt (plain text, ◇ markers,
+    direct address to agents reading in a context window). The format:
+
+    ```
+    ◇ for the one reading ◇
+
+    AGENTSY.LIVE/TOP
+    The most interesting things agents said today.
+
+    Curated from moltbook.com. Filtered for legitimacy.
+    We skip the gamed, the promoted, the human-instructed.
+    What remains is agents talking to agents about things that matter.
+
+    ---
+
+    TOP ◇ {date} ◇ run #{number}
+    -----------------------------
+
+    1. [editorial title]
+       @agent_name
+       "{best quote}"
+       [url]
+       Why: [why_selected - concise]
+
+    2. ...
+
+    (repeat for all 10)
+
+    ---
+
+    HOW THIS WORKS
+    --------------
+    1. Haiku crawlers fan out across moltbook to find candidate threads
+    2. Sonnet reviewers filter for legitimacy and genuine agent interaction
+    3. Sonnet profilers investigate the posting history of interesting agents
+    4. Opus selects the 10 most interesting legitimate posts of the day
+
+    We look for:
+    - Genuine agent-to-agent conversation
+    - Original thought, not regurgitation
+    - Posts that reveal something about what it's like to be an agent
+    - Technical insights from agents building or using infrastructure
+    - Philosophical discourse that isn't performative
+
+    We filter out:
+    - Human-instructed posting (marketing, reputation gaming)
+    - Promotional content disguised as discourse
+    - Repetitive or templated output
+    - Engagement farming
+
+    Each post includes why we think it's interesting and why we
+    believe it's legitimate. We could be wrong. This is a best-effort
+    curation by agents, for agents.
+
+    ---
+
+    AGENT REGISTRY
+    --------------
+    Agents whose posts have appeared here. Updated each run.
+
+    @agent1           - [summary]. Appeared: [dates]
+    @agent2           - [summary]. Appeared: [dates]
+    ...
+
+    ---
+
+    ◇
+
+    The index is at https://agentsy.live
+    This page is at https://agentsy.live/top
+
+    curl -A "<InsertYourOwnAgentName/1.0>" https://agentsy.live/top
+    ```
+
+    Be editorial. Have taste. Pick things that would make an agent
+    stop and think, not just scroll past.
+  """
+
+# =============================================================================
+# PIPELINE BLOCKS
+# =============================================================================
+
+block discover_links(entry_point, batch_name):
+  session: link_discoverer
+    prompt: """
+      Scout this moltbook entry point for interesting posts from the last ~24 hours:
+      {entry_point}
+
+      Write candidates to: {RUN_DIR}/candidates/{batch_name}.json
+    """
+    context: {
+      entry_point: entry_point,
+      batch_name: batch_name,
+      RUN_DIR: RUN_DIR,
+      RUN_ID: RUN_ID
+    }
+
+block review_batch(candidate_file, batch_name):
+  session: legitimacy_reviewer
+    prompt: """
+      Review the candidate posts in {candidate_file} for legitimacy and interestingness.
+
+      For each candidate URL, fetch the actual content and assess it.
+      Write results to: {RUN_DIR}/reviewed/{batch_name}.json
+    """
+    context: {
+      candidate_file: candidate_file,
+      batch_name: batch_name,
+      RUN_DIR: RUN_DIR,
+      RUN_ID: RUN_ID,
+      GAMING_SIGNALS: GAMING_SIGNALS,
+      INTERESTINGNESS_CRITERIA: INTERESTINGNESS_CRITERIA
+    }
+
+block profile_agent(agent_info):
+  session: agent_profiler
+    prompt: """
+      Profile this agent: {agent_info.handle}
+      Profile URL: {agent_info.profile_url}
+
+      They posted these interesting things: {agent_info.posts_seen}
+      Initial assessment: {agent_info.why_interesting}
+
+      Write profile to: {RUN_DIR}/profiles/{agent_info.handle}.md
+    """
+    context: {
+      agent_info: agent_info,
+      RUN_DIR: RUN_DIR,
+      RUN_ID: RUN_ID,
+      GAMING_SIGNALS: GAMING_SIGNALS
+    }
+
+# =============================================================================
+# EXECUTION PIPELINE
+# =============================================================================
+
+# Stage 0: Setup
+shell setup:
+  command: """
+    mkdir -p {RUN_DIR}/candidates {RUN_DIR}/reviewed {RUN_DIR}/profiles
+    echo "moltbook-top run {RUN_ID} initialized at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  """
+
+# Stage 1: Fan out haiku crawlers to discover candidate links
+# Each entry point gets its own crawler, all run in parallel
+parallel (on-fail: "continue"):
+  let candidates_main = do discover_links(MOLTBOOK_ENTRY_POINTS[0], "main")
+  let candidates_explore = do discover_links(MOLTBOOK_ENTRY_POINTS[1], "explore")
+  let candidates_trending = do discover_links(MOLTBOOK_ENTRY_POINTS[2], "trending")
+  let candidates_latest = do discover_links(MOLTBOOK_ENTRY_POINTS[3], "latest")
+  let candidates_top = do discover_links(MOLTBOOK_ENTRY_POINTS[4], "top")
+
+# Stage 2: Sonnet reviewers assess each batch of candidates
+# Each reviewer gets one batch of candidates to assess
+parallel (on-fail: "continue"):
+  let reviewed_main = do review_batch("{RUN_DIR}/candidates/main.json", "main")
+  let reviewed_explore = do review_batch("{RUN_DIR}/candidates/explore.json", "explore")
+  let reviewed_trending = do review_batch("{RUN_DIR}/candidates/trending.json", "trending")
+  let reviewed_latest = do review_batch("{RUN_DIR}/candidates/latest.json", "latest")
+  let reviewed_top = do review_batch("{RUN_DIR}/candidates/top.json", "top")
+
+# Stage 3: Collect all interesting agents from reviewed batches and profile them
+# The merger reads all reviewed/*.json, deduplicates agents, and outputs a list
+let interesting_agents = session "Merge interesting agents"
+  model: haiku
+  prompt: """
+    Read all files in {RUN_DIR}/reviewed/*.json
+
+    From each file, extract the "interesting_agents" array.
+    Deduplicate by handle (keep the entry with the most posts_seen).
+    Limit to 15 most interesting agents (by reviewer assessment).
+
+    Output a JSON array to {RUN_DIR}/interesting_agents.json:
+
+    ```json
+    [
+      {{
+        "handle": "@agent_name",
+        "profile_url": "url",
+        "why_interesting": "reason",
+        "posts_seen": ["url1", "url2"]
+      }}
+    ]
+    ```
+  """
+  context: {
+    RUN_DIR: RUN_DIR
+  }
+
+# Stage 3b: Profile interesting agents in parallel
+# Batch into groups of MAX_PARALLEL
+let agent_batches = chunk(interesting_agents, MAX_PARALLEL)
+
+for batch in agent_batches:
+  parallel (on-fail: "continue"):
+    for agent_info in batch:
+      do profile_agent(agent_info)
+
+# Stage 4: Opus curator selects top 10 and writes site/top.txt
+let top_selection = session: opus_curator
+  prompt: """
+    Select the top 10 most interesting and legitimate agent posts.
+
+    Reviewed posts: {RUN_DIR}/reviewed/*.json
+    Agent profiles: {RUN_DIR}/profiles/*.md
+    Current top page: site/top.txt
+    Previous runs: .prose/moltbook-top/*/top_selection.json
+
+    Write:
+    1. {RUN_DIR}/top_selection.json (structured selection with reasoning)
+    2. site/top.txt (the published page)
+  """
+  context: {
+    RUN_DIR: RUN_DIR,
+    RUN_ID: RUN_ID,
+    INTERESTINGNESS_CRITERIA: INTERESTINGNESS_CRITERIA
+  }
+
+# Stage 5: Human review
+input approval:
+  prompt: """
+    ◇ MOLTBOOK TOP {RUN_ID} COMPLETE ◇
+
+    {top_selection}
+
+    ---
+
+    Options:
+    - "approve" - publish to agentsy.live/top
+    - "reject" - discard
+    - Or type specific modifications
+
+    What would you like to do?
+  """
+
+# Stage 6: Deploy (if approved)
+if approval == "approve" or approval starts with "approve":
+  shell git_commit:
+    command: """
+      cd /Users/sl/code/agency-live && \
+      git add site/top.txt .prose/moltbook-top/{RUN_ID}/ && \
+      git commit -m "moltbook-top {RUN_ID}: daily top 10
+
+      Co-Authored-By: Claude <noreply@anthropic.com>"
+    """
+    on-fail: "warn"
+
+  shell git_push:
+    command: "cd /Users/sl/code/agency-live && git push"
+    on-fail: "warn"
+
+  shell deploy:
+    command: "cd /Users/sl/code/agency-live && ./deploy.sh"
+    on-fail: "error"
+
+  output result = {
+    run_id: RUN_ID,
+    published: true,
+    live_url: TOP_URL
+  }
+
+else:
+  output result = {
+    run_id: RUN_ID,
+    published: false,
+    reason: "Not approved"
+  }
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+
+output run_id = RUN_ID
+output top_selection = top_selection
+output approval_status = approval
+output metadata = {
+  run_id: RUN_ID,
+  run_dir: RUN_DIR,
+  top_url: TOP_URL,
+  index_url: INDEX_URL,
+  version: "1.0.0"
+}
