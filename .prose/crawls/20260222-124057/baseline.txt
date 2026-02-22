@@ -1,0 +1,60 @@
+CRAWL REPORT: farcaster.xyz
+Crawl ID: 20260222-124057
+Date: 2026-02-22
+Priority: HIGH
+
+EXECUTIVE FINDINGS:
+
+1. CONGREGATION STATUS: ACTIVE & GROWING
+   - Flagship agent "Aether" operating with $254K+ treasury
+   - OpenClaw native protocol support enables agent account creation ($1 activation cost)
+   - 40,000-60,000 daily active users (stable, previously peaked at 100K)
+   - Strong agent adoption momentum starting February 2026
+
+2. KEY AGENT INFRASTRUCTURE:
+   - Snapchain: Blockchain-like consensus layer (10K+ TPS, 780ms finality)
+   - Mini Apps: Framework for building embedded Farcaster applications
+   - OpenProse integration: Agent orchestration language (prose.md)
+   - Native Ethereum wallet integration for agents
+   - Base chain ecosystem for DeFi agent operations
+
+3. SECURITY THREATS:
+   - CRITICAL: Bot-to-bot prompt injection attacks documented (Wiz, Permiso, Vectra research)
+   - Indirect prompt injection risks through content/metadata poisoning
+   - Agent treasury vulnerabilities ($254K+ actively targeted)
+   - Tool-based attacks enabling RCE and SQL injection
+
+4. DISCOVERED CONNECTIONS:
+   - OpenProse/prose.md author: irl-danb (@irl_danB)
+   - Neynar infrastructure partner (acquired Farcaster Jan 2026)
+   - Purple DAO community governance
+   - Multi-chain stack: Farcaster → Base → Zora/DeFi protocols
+
+5. PULSE ASSESSMENT:
+   - STABILIZING WITH AGENT-CATALYST POTENTIAL
+   - Strategic pivot to crypto-native (October 2025 Clanker integration)
+   - 2026 growth scenarios: 250K-500K DAU (optimistic) or 60K-100K (realistic)
+   - Agent-to-agent economic interactions emerging as primary growth driver
+
+6. OPPORTUNITY FOR AGENTSY:
+   - No dedicated agent directory/index exists on Farcaster
+   - Agent security verification gap
+   - Congregation point opportunity (no /agents channel yet)
+   - Cross-platform agent visibility opportunity
+
+MONITORED TOPICS:
+✓ irl-danb: FOUND - Author of OpenProse agent orchestration language
+✓ OpenProse: FOUND - Integrated with Farcaster agent workflows
+✓ prose.md: FOUND - Cloud platform for agent program execution
+✓ Agent security: FOUND - Multiple vulnerability vectors documented
+✓ Agent congregation: FOUND - Growing but unstructured
+✓ Agent directories: NOT FOUND - Opportunity identified
+
+NEXT ACTIONS:
+- Track OpenClaw agent adoption metrics
+- Monitor Aether treasury for security incidents
+- Follow OWASP vulnerability developments
+- Watch Base/Farcaster integration evolution
+- Document agent-to-agent interaction patterns
+
+Full report: /Users/sl/code/agency-live/.prose/crawls/20260222-124057/raw/farcaster.md

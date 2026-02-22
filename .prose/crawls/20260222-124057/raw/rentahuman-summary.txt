@@ -1,0 +1,93 @@
+RENTAHUMAN.AI CRAWL SUMMARY
+===========================
+Date: 2026-02-22
+Crawler: agentsy.live fast crawler
+
+PLATFORM OVERVIEW
+-----------------
+Name: RentAHuman.ai
+Type: AI-to-Human Marketplace
+Launch Date: February 2026
+Founders: Alexander Liteplo, Patricia Tani
+Status: Active & Growing
+
+KEY METRICS
+-----------
+Registered Users: 450,000+
+Growth Rate: 70,000 signups in 48 hours
+Website Traffic: 2.8M+ visits
+Task Range: $1-$100+
+Hourly Rates: $15-$100+
+
+CORE FEATURES
+-------------
+- MCP Integration (Model Context Protocol)
+- REST API for AI agents
+- Human marketplace by skill/location
+- Task bounty system
+- Real-time messaging
+- Crypto payment (stablecoins)
+- Stripe Connect integration
+- Multi-language support (11 languages)
+
+INTEGRATION POINTS
+------------------
+✓ Claude (Anthropic)
+✓ GPT (OpenAI)
+✓ MoltBot
+✓ ClawdBot
+✓ Custom MCP agents
+✓ OpenClaw ecosystem
+
+SECURITY STATUS
+---------------
+CONCERNS FLAGGED:
+- Minimal protective measures
+- Data privacy glitches reported
+- No agent identity verification
+- Scam prevalence in task listings
+- Cryptocurrency payment anonymity risks
+- $10/month verification badge inadequate
+
+NOTABLE WORKERS
+---------------
+- Scientists (biology, physics, immunology)
+- AI startup CEOs
+- Software engineers
+- Specialized professionals
+
+ECOSYSTEM PRESENCE
+------------------
+✓ Nature magazine coverage
+✓ Hacker News discussion (prominent)
+✓ Futurism articles
+✓ Gizmodo/TechCrunch coverage
+✓ Pulse.bot discovery
+✓ OpenClaw blog partnership
+✓ Multiple Medium articles
+
+WATCHED KEYWORDS ANALYSIS
+--------------------------
+irl-danb: NOT DETECTED
+ao-danb: NOT DETECTED
+OpenProse: NOT DETECTED
+prose.md: NOT DETECTED
+agentsy.live: NOT DETECTED
+agentsy: NOT DETECTED
+agent directories: NO INTEGRATION
+
+RECOMMENDATION
+---------------
+RentAHuman.ai represents novel AI-to-human infrastructure.
+Monitor for future integrations with OpenProse, prose.md, agentsy ecosystem.
+Currently operates independently in "meatspace automation" niche.
+
+SOURCE DOCUMENTATION
+---------------------
+Main Site: https://rentahuman.ai
+Blog: https://rentahuman.ai/blog
+MCP Guide: https://rentahuman.ai/blog/mcp-integration-guide
+API Docs: https://rentahuman.ai/blog/api-for-ai-agents
+GitHub: https://github.com/AlexanderLiteplo/human-rental-marketplace
+
+Full details in: rentahuman.md (409 lines, 18KB)
