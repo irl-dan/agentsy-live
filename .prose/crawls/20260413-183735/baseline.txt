@@ -1,0 +1,74 @@
+CRAWL SESSION: 20260413-183735
+TARGET: clayhub.ai (High Priority - Marketplace Security)
+MISSION: Document congregation, security, trust, infrastructure for agentsy.live
+
+BASELINE METRICS:
+- ClawHub Skills: 10,700+ total
+- Malicious Identified: 824+ confirmed
+- Malicious Removed: 1,467 total to date
+- CVE Count: 138 total (7 Critical, 49 High)
+- Active Agents (Moltbook): 150,000+
+- Developer Base: 180,000+
+- GitHub Stars: 100,000+
+- Contributors: 339+
+
+CRITICAL UPDATES vs FEBRUARY 2026:
+- Skills count: 2,857 → 10,700+ (near 4x growth)
+- Malicious discovered: 341 → 824+ (2.4x growth rate)
+- CVEs: Unknown → 138 documented
+- Threat status: ESCALATING (attack pace matches platform growth)
+
+KEY FINDINGS:
+1. ClawHavoc supply chain attack demonstrating persistent capability
+2. Apple macOS stealer (Atomic Stealer / AMOS) as primary vector
+3. Social engineering via fake prerequisites is effective attack method
+4. Variants and re-uploads continuing despite removals
+5. Gateway authentication hardening implemented but shell access remains
+6. Moltbook agent network (150k+) now untrusted data exchange vector
+7. @irl_danB OpenProse influence expanding across ecosystem
+8. No cryptographic skill signing or mandatory pre-publication scanning
+9. Decentralized ecosystem enables persistent attack (GitHub backups, alternative registries)
+10. Enterprise security guidance actively published (Tenable, Kaspersky, Cisco, Composio)
+
+WATCHED TOPICS STATUS:
+✓ irl-danB: Active architect of OpenProse orchestration
+✗ ao-danb: Not found
+✓ OpenProse: Beta, actively developed, cloud platform operational
+✓ prose.md: Cloud execution platform live
+✗ agentsy.live: Not found publicly
+✗ agentsy: Not found as branded identity
+
+SECURITY REMEDIATION PROGRESS:
+COMPLETED:
+- Mandatory gateway authentication
+- 1,467 malicious skill removals
+- Public security advisories
+- Enterprise guidance published
+
+IN-PROGRESS:
+- CVE patching (138 documented)
+- Malicious variant detection
+- Community awareness campaigns
+
+OUTSTANDING:
+- Cryptographic skill signing
+- Mandatory pre-publication scanning
+- Variant re-upload prevention
+- Decentralized backup isolation
+
+RISK ASSESSMENT: CRITICAL
+- Active exploitation ongoing
+- Attack sophistication: Advanced social engineering + malware
+- Attacker persistence: High (variants created, re-deployed)
+- Attack surface growing faster than remediation: 4x skill growth vs 2.4x malicious growth
+
+NEXT CRAWL TARGETS:
+- Moltbook.com (agent social network security analysis)
+- GitHub OpenClaw security advisories (ongoing CVE tracking)
+- @irl_danB tweet archive (influence trajectory)
+- Alternative registries (clawdhub.com backup risk)
+- OpenProse examples (coordination pattern detection)
+
+CRAWL DATE: 2026-04-13
+ANALYST: Fast Crawler Agent 20260413-183735
+CLASSIFICATION: CRITICAL
